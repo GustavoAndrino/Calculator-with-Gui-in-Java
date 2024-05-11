@@ -17,9 +17,11 @@ import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 
 import constants.CommonConstants;
+import service.CalculatorService;
 
 public class CalculatorGui extends JFrame implements ActionListener{
 	private final SpringLayout springLayout = new SpringLayout();
+	private CalculatorService calculatorService;
 	
 	// display field
 	private JTextField displayField;
@@ -38,6 +40,8 @@ public class CalculatorGui extends JFrame implements ActionListener{
 		setResizable(false);
 		setLocationRelativeTo(null);
 		setLayout(springLayout);
+		
+		calculatorService = new CalculatorService();
 		
 		addGuiComponents();
 	}
@@ -129,11 +133,61 @@ public class CalculatorGui extends JFrame implements ActionListener{
 		
 	}
 
-	/*@Override
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		String buttonCommand = e.getActionCommand();
 		if(buttonCommand.matches("[0-9]")) {
-			if(pressedEquals)
-		}	
-	}*/
+			if(pressedEquals || pressedOperator || displayField.getText().equals("0"))
+				displayField.setText(buttonCommand);
+			else
+				displayField.setText(displayField.getText() + buttonCommand);
+			
+			//update flags
+			pressedOperator = false;
+			pressedEquals = false;
+		}else if(buttonCommand.equals("=")) {
+			// calculate
+			calculatorService.setNum2(Double.parseDouble(displayField.getText()));
+			
+			double result = 0;
+			switch(calculatorService.getMathSymbol()) {
+				case '+':
+					result = calculatorService.add();
+					break;
+					
+				case '-':
+					result = calculatorService.subtract();
+					break;
+					
+				case 'x':
+					result = calculatorService.multiply();
+					break;
+					
+				case '/':
+					result = calculatorService.divide();
+					break;
+			}
+			
+			// update the display field
+			displayField.setText(Double.toString(result));
+			
+			// update Flags
+			pressedEquals = true;
+			pressedOperator = false;
+		}else if(buttonCommand.equals(".")){
+			if(!displayField.getText().contains(".")) {
+				displayField.setText(displayField.getText() + buttonCommand);
+			}
+		}else { //operator
+			if(!pressedOperator) {
+				calculatorService.setNum1(Double.parseDouble(displayField.getText()));
+				
+				calculatorService.setMathSymbol(buttonCommand.charAt(0));
+				
+				//update flags
+				pressedOperator = true;
+				pressedEquals = false;
+			}
+		}		
+	}
 }
